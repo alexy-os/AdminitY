@@ -32,9 +32,33 @@ router.delete('/users/:id', auth.requireAuth, async (req, res) => {
   res.sendStatus(204);
 });
 
-router.get('/unknown-users', auth.requireAuth, async (req, res) => {
-  const unknownUsers = await db.unknownUsers.find({});
-  res.json(unknownUsers);
+// Users route
+router.get('/users', (req, res) => {
+  const users = [
+    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
+  ];
+  res.render('pages/users', { users, activeRoute: 'users' });
+});
+
+// New User route
+router.get('/users/new', (req, res) => {
+  res.render('pages/users-new', { activeRoute: 'users-new' });
+});
+
+router.post('/users/create', (req, res) => {
+  // Here you would typically save the new user to a database
+  console.log('New user:', req.body);
+  res.redirect('/users');
+});
+
+// Lead Users route
+router.get('/lead-users', (req, res) => {
+  const leadUsers = [
+    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', leadScore: 85, lastActivity: '2023-05-15' },
+    { id: 2, name: 'Bob Williams', email: 'bob@example.com', leadScore: 72, lastActivity: '2023-05-14' },
+  ];
+  res.render('pages/lead-users', { leadUsers, activeRoute: 'lead-users' });
 });
 
 module.exports = router;

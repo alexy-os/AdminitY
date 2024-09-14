@@ -10,10 +10,18 @@ const config = require('./config');
 const app = express();
 
 // Handlebars setup
-app.engine('hbs', exphbs({
+const hbs = exphbs.create({
+  helpers: {
+    eq: function (v1, v2) {
+      return v1 === v2;
+    }
+  },
   defaultLayout: 'main',
   extname: '.hbs'
-}));
+});
+
+// Use the custom Handlebars instance
+app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 
 // Middleware
@@ -28,6 +36,7 @@ app.use(session({
 
 // Routes
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 app.get('/', (req, res) => {
   const botUsername = config.telegramBotUsername;
@@ -54,11 +63,11 @@ app.post('/auth/telegram', (req, res) => {
 });
 
 app.get('/dashboard', auth.requireAuth, (req, res) => {
-  res.render('pages/dashboard', { user: req.session.user, pageTitle: 'Dashboard' });
+  res.render('pages/dashboard', { user: req.session.user, pageTitle: 'Dashboard', activeRoute: 'dashboard' });
 });
 
 app.get('/settings', auth.requireAuth, (req, res) => {
-  res.render('pages/settings', { user: req.session.user, pageTitle: 'Settings' });
+  res.render('pages/settings', { user: req.session.user, pageTitle: 'Settings', activeRoute: 'settings' });
 });
 
 app.get('/logout', (req, res) => {

@@ -6,31 +6,31 @@
   <nav>
     <ul class="space-y-2">
       <li>
-        <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
+        <a href="/dashboard" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm {{#if (eq activeRoute 'dashboard')}}text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-slate-700{{else}}text-gray-700 dark:text-gray-200{{/if}}">
           <i data-lucide="braces" class="text-sky-600 dark:text-sky-100 w-4 h-4 mb-1 mr-1 inline"></i>
-          API Console
+          Dashboard
         </a>
       </li>
       <li>
-        <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-slate-700">
+        <a href="/users" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm {{#if (eq activeRoute 'users')}}text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-slate-700{{else}}text-gray-700 dark:text-gray-200{{/if}}">
           <i data-lucide="users" class="text-sky-600 dark:text-sky-100 w-4 h-4 mb-1 mr-1 inline"></i>
           All Users
         </a>
       </li>
       <li>
-        <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
+        <a href="/users/new" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm {{#if (eq activeRoute 'users-new')}}text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-slate-700{{else}}text-gray-700 dark:text-gray-200{{/if}}">
           <i data-lucide="user-plus" class="text-sky-600 dark:text-sky-100 w-4 h-4 mb-1 mr-1 inline"></i>
           New User
         </a>
       </li>
       <li>
-        <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
+        <a href="/lead-users" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm {{#if (eq activeRoute 'lead-users')}}text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-slate-700{{else}}text-gray-700 dark:text-gray-200{{/if}}">
           <i data-lucide="user-round-search" class="text-sky-600 dark:text-sky-100 w-4 h-4 mb-1 mr-1 inline"></i>
           Lead Users
         </a>
       </li>
       <li>
-        <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
+        <a href="/settings" class="block px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm {{#if (eq activeRoute 'settings')}}text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-slate-700{{else}}text-gray-700 dark:text-gray-200{{/if}}">
           <i data-lucide="settings-2" class="text-sky-600 dark:text-sky-100 w-4 h-4 mb-1 mr-1 inline"></i>
           Settings
         </a>
