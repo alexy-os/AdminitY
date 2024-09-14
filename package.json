@@ -1,7 +1,7 @@
 {
-  "name": "dashboard-admin-app",
+  "name": "adminity",
   "version": "1.0.0",
-  "description": "Dashboard for managing Telegram WebApp users",
+  "description": "Admin Dashboard for managing Telegram WebApp users",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

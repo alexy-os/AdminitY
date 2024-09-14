@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>AdminitY - User Management</title>
+    <title>Welcome to AdminitY</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description"
@@ -63,28 +63,41 @@
     </script>
 </head>
 
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-200">
-  <div class="flex h-screen overflow-hidden">
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
-        {{> sidebar}}
+<body
+    class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-200">
+    <div class="flex h-screen overflow-hidden">
         <main class="flex-1 flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-900">
-            {{> header}}
+            <header
+                class="sticky top-0 z-10 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-3 flex justify-between items-center">
+                <div class="text-xl font-semibold flex items-center cursor-pointer" onclick="window.location.href='/'">
+                    <i data-lucide="cloud-cog" stroke-width="2.5" class="text-sky-600 dark:text-sky-100 w-5 h-5 mb-0.5 mr-1"></i>
+                    Adminit<span class="text-sky-600 mr-1">Y</span>
+                </div>
+                <div class="flex items-center">
+                    <button id="darkModeToggle">
+                    <i data-lucide="sun" class="w-5 h-5"></i>
+                    </button>
+                    <a href="/login" id="log-out" class="ml-2">
+                    <i data-lucide="log-in" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </header>
             <div class="flex-1 overflow-y-auto p-4 space-y-4">
                 <div class="max-w-4xl mx-auto mt-8">
                     <div class="bg-slate-100 dark:bg-slate-900 p-6">
-                        {{{body}}}
+                        <h1 class="text-2xl font-bold mb-4">Welcome to AdminitY</h1>
+                        <p class="text-gray-700 dark:text-gray-300">
+                            AdminitY is a powerful admin dashboard template built with TailwindCSS.
+                            It comes with dark mode support and a clean, responsive design.
+                        </p>
+                        <p class="text-gray-700 dark:text-gray-300">
+                            Use this template to manage your website or application with ease.
+                        </p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
-    <nav>
-        <a href="/">Home</a>
-        <a href="/approved-users">Approved Users</a>
-        <a href="/lead-users">Lead Users</a>
-        <a href="/login">Login</a>
-    </nav>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -104,36 +117,6 @@
                 htmlElement.classList.add('dark');
                 darkModeToggle.checked = true;
             }
-
-            // Sidebar toggle
-            const sidebarToggle = document.getElementById("sidebar-toggle");
-            const sidebar = document.getElementById("sidebar");
-            const sidebarOverlay = document.getElementById("sidebar-overlay");
-
-            function toggleSidebar() {
-                sidebar.classList.toggle("-translate-x-full");
-                sidebarOverlay.classList.toggle("hidden");
-            }
-
-            sidebarToggle.addEventListener("click", toggleSidebar);
-            sidebarOverlay.addEventListener("click", toggleSidebar);
-
-            // Initialize sidebar state
-            function initializeSidebar() {
-                if (window.innerWidth < 768) {
-                    sidebar.classList.add("-translate-x-full");
-                    sidebarOverlay.classList.add("hidden");
-                } else {
-                    sidebar.classList.remove("-translate-x-full");
-                    sidebarOverlay.classList.add("hidden");
-                }
-            }
-
-            // Initialize on load
-            initializeSidebar();
-
-            // Update on window resize
-            window.addEventListener("resize", initializeSidebar);
         });
     </script>
 </body>

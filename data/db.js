@@ -1,10 +1,37 @@
 const Datastore = require('nedb');
-const path = require('path');
 
-const db = {};
+const db = new Datastore({ filename: 'data/users.db', autoload: true });
 
-db.users = new Datastore({ filename: path.join(__dirname, 'users.db'), autoload: true });
-db.admins = new Datastore({ filename: path.join(__dirname, 'admins.db'), autoload: true });
-db.unknownUsers = new Datastore({ filename: path.join(__dirname, 'unknown_users.db'), autoload: true });
+const getApprovedUsers = () => {
+  return new Promise((resolve, reject) => {
+    db.find({ type: 'approved' }).sort({ username: 1 }).exec((err, users) => {
+      if (err) reject(err);
+      else resolve(users);
+    });
+  });
+};
 
-module.exports = db;
+const getLeadUsers = () => {
+  return new Promise((resolve, reject) => {
+    db.find({ type: 'lead' }).sort({ timestamp: -1 }).exec((err, users) => {
+      if (err) reject(err);
+      else resolve(users);
+    });
+  });
+};
+
+const addUser = (userData) => {
+  return new Promise((resolve, reject) => {
+    db.insert(userData, (err, newUser) => {
+      if (err) reject(err);
+      else resolve(newUser);
+    });
+  });
+};
+
+module.exports = {
+  db,
+  getApprovedUsers,
+  getLeadUsers,
+  addUser,
+};

@@ -2,10 +2,10 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
 const path = require('path');
-const crypto = require('crypto');
 const apiRoutes = require('./routes/api');
 const auth = require('./auth');
 const config = require('./config');
+const { db } = require('./data/db');
 
 const app = express();
 
@@ -14,6 +14,9 @@ const hbs = exphbs.create({
   helpers: {
     eq: function (v1, v2) {
       return v1 === v2;
+    },
+    formatDate: function (date) {
+      return new Date(date).toLocaleString();
     }
   },
   defaultLayout: 'main',
@@ -38,28 +41,30 @@ app.use(session({
 app.use('/api', apiRoutes);
 app.use('/', apiRoutes);
 
-app.get('/', (req, res) => {
+app.post('/auth/telegram', (req, res) => {
+  try {
+    const { id, username } = req.body;
+    console.log('Received username:', username);
+    const allowedUsernames = config.allowedUsernames;
+
+    if (!allowedUsernames.includes(username)) {
+      console.log('Unauthorized user:', username);
+      return res.status(403).json({ success: false, message: 'Unauthorized user', redirect: '/' });
+    }
+
+    req.session.user = { id, username };
+    console.log('Authentication successful for:', username);
+    res.json({ success: true, redirect: '/dashboard' });
+  } catch (error) {
+    console.error('Error in /auth/telegram:', error);
+    res.status(500).json({ success: false, message: 'Internal server error', redirect: '/' });
+  }
+});
+
+app.get('/login', (req, res) => {
   const botUsername = config.telegramBotUsername;
   const authUrl = '/dashboard';
   res.render('pages/login', { botUsername, authUrl, layout: false, pageTitle: 'Login' });
-});
-
-app.post('/auth/telegram', (req, res) => {
-  try {
-    console.log('Received Telegram auth request:', req.body);
-    const { id, first_name, username, photo_url, auth_date, hash } = req.body;
-    
-    // В этой упрощенной версии мы не проверяем hash
-    // Вместо этого мы просто доверяем данным, полученным от виджета Telegram
-
-    // Сохраняем данные пользователя в сессии
-    req.session.user = { id, first_name, username, photo_url };
-    console.log('Authentication successful');
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error in /auth/telegram:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
 });
 
 app.get('/dashboard', auth.requireAuth, (req, res) => {
@@ -83,4 +88,23 @@ app.get('/logout', (req, res) => {
 const PORT = config.port;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Middleware для аутентификации пользователя
+app.use((req, res, next) => {
+  if (req.session.user) {
+    db.findOne({ _id: req.session.user._id }, (err, user) => {
+      if (err) {
+        console.error('Error finding user:', err);
+        next();
+      } else if (user) {
+        req.user = user;
+        next();
+      } else {
+        next();
+      }
+    });
+  } else {
+    next();
+  }
 });

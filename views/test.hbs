@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram WebApp Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 h-full flex items-center justify-center">
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-md max-w-md w-full">
+        <h1 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Telegram WebApp Test</h1>
+        <p id="status" class="mb-4 text-slate-700 dark:text-slate-300">Ready for testing</p>
+        <button id="checkAuth" class="bg-sky-500 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded">
+            Check Authorization
+        </button>
+    </div>
+
+    <script>
+        const API_URL = 'https://example.ngrok-free.app'; // API URL
+        const BOT_USERNAME = 'my_bot'; // username
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const statusElement = document.getElementById('status');
+            const checkAuthButton = document.getElementById('checkAuth');
+
+            checkAuthButton.addEventListener('click', checkAuth);
+
+            async function checkAuth() {
+                const testUser = {
+                    id: 5544333321,
+                    username: 'anon',
+                    first_name: 'Anon',
+                    last_name: 'Tg'
+                };
+
+                try {
+                    const response = await fetch(`${API_URL}/telegram/${BOT_USERNAME}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: testUser.id,
+                            username: testUser.username,
+                            first_name: testUser.first_name,
+                            last_name: testUser.last_name,
+                            auth_date: Math.floor(Date.now() / 1000),
+                            hash: 'test_hash'
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        statusElement.textContent = 'User authorized';
+                        statusElement.classList.add('text-green-600');
+                    } else {
+                        statusElement.textContent = 'User not authorized';
+                        statusElement.classList.add('text-red-600');
+                    }
+                } catch (error) {
+                    console.error('Error checking authorization:', error);
+                    statusElement.textContent = 'Error checking authorization';
+                    statusElement.classList.add('text-red-600');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

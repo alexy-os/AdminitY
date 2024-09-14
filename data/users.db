@@ -1,0 +1,3 @@
+{"username":"testy","username_bot":"my_bot","_id":"2i6IZCQJ3L4g0b39","type":"approved"}
+{"tg_id":5544333321,"username":"anon","username_bot":"my_bot","timestamp":{"$$date":1726346141734},"init_data":{"first_name":"Anon","last_name":"Tg","auth_date":1726346141,"hash":"test_hash"},"type":"lead","_id":"3NTRO2mk3TkUGhqS"}
+{"username":"admin","username_bot":"my_bot","type":"approved","_id":"JUCcf3XM9LID2uvl","tg_id":1122334455,"timestamp":{"$$date":1726345995920},"init_data":{"first_name":"Admin","last_name":"Tg","auth_date":1726345995,"hash":"test_hash"}}

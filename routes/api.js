@@ -1,64 +1,206 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../data/db');
+const { db, getApprovedUsers, getLeadUsers, addUser } = require('../data/db');
 const auth = require('../auth');
 
-router.get('/telegram/:username_bot', auth.requireAuth, async (req, res) => {
-  const { username_bot } = req.params;
+router.get('/', (req, res) => {
+  res.render('pages/home', { layout: false, pageTitle: 'Home' });
+});
 
-  // Fetch data from database
-  const users = await db.users.find({ username_bot });
-  const usernames = users.map(user => user.username);
+router.get('/test', auth.requireAuth, (req, res) => {
+  res.render('test', { layout: false, pageTitle: 'Test WebApp' });
+});
+
+router.post('/telegram/:username_bot', async (req, res) => {
+  const { username_bot } = req.params;
+  const { id, username, ...initData } = req.body; // Данные из initData WebApp
   
-  res.json({ username_bot: usernames });
+  try {
+    // Проверяем существование пользователя в группе бота
+    const user = await new Promise((resolve, reject) => {
+      db.findOne({ username, username_bot }, (err, doc) => {
+        if (err) reject(err);
+        else resolve(doc);
+      });
+    });
+    
+    console.log('User found:', user); // Отладочная информация
+
+    if (user) {
+      // Обновляем существующую запись
+      await new Promise((resolve, reject) => {
+        db.update(
+          { _id: user._id },
+          { $set: {
+            tg_id: id,
+            timestamp: new Date(),
+            init_data: initData
+          }},
+          {},
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+
+      console.log('User updated');
+      return res.json({ success: true });
+    } else {
+      // Сохраняем пользователя как лид
+      const newUnknownUser = await addUser({
+        tg_id: id,
+        username,
+        username_bot,
+        timestamp: new Date(),
+        init_data: initData,
+        type: 'lead'
+      });
+      console.log('Unknown user saved:', newUnknownUser); // Отладочная информация
+      return res.json({ success: false });
+    }
+  } catch (error) {
+    console.error('Error checking user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/users', auth.requireAuth, async (req, res) => {
+  try {
+    const users = await getApprovedUsers();
+    res.render('pages/users', { users, pageTitle: 'Approved Users', activeRoute: 'users' });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).render('pages/error', { message: 'Error fetching users' });
+  }
+});
+
+router.get('/users/new', auth.requireAuth, (req, res) => {
+  res.render('pages/users-new', { activeRoute: 'users-new' });
 });
 
 router.post('/users', auth.requireAuth, async (req, res) => {
   const { username, username_bot } = req.body;
-  const newUser = await db.users.insert({ username, username_bot });
-  res.json(newUser);
+  try {
+    const newUser = await addUser({ username, username_bot, type: 'approved' });
+    console.log('New user created:', newUser);
+    res.redirect('/users');
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).render('pages/error', { message: 'Error creating user' });
+  }
 });
 
-router.put('/users/:id', auth.requireAuth, async (req, res) => {
+router.get('/users/:id/edit', auth.requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await new Promise((resolve, reject) => {
+      db.findOne({ _id: id }, (err, doc) => {
+        if (err) reject(err);
+        else resolve(doc);
+      });
+    });
+    if (!user) {
+      return res.status(404).render('pages/error', { message: 'User not found' });
+    }
+    res.render('pages/users-edit', { user, activeRoute: 'users' });
+  } catch (error) {
+    res.status(500).render('pages/error', { message: 'Error fetching user' });
+  }
+});
+
+router.post('/users/:id', auth.requireAuth, async (req, res) => {
   const { id } = req.params;
   const { username, username_bot } = req.body;
-  const updatedUser = await db.users.update({ _id: id }, { $set: { username, username_bot } }, { returnUpdated: true });
-  res.json(updatedUser);
+  try {
+    await new Promise((resolve, reject) => {
+      db.update({ _id: id }, { $set: { username, username_bot } }, {}, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    console.log(`User updated: ID=${id}, Username=${username}, Bot=${username_bot}`);
+    res.redirect('/users');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).render('pages/error', { message: 'Error updating user' });
+  }
 });
 
-router.delete('/users/:id', auth.requireAuth, async (req, res) => {
+router.post('/users/:id/delete', auth.requireAuth, async (req, res) => {
   const { id } = req.params;
-  await db.users.remove({ _id: id });
-  res.sendStatus(204);
+  try {
+    await new Promise((resolve, reject) => {
+      db.remove({ _id: id }, {}, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    res.redirect('/users');
+  } catch (error) {
+    res.status(500).render('pages/error', { message: 'Error deleting user' });
+  }
 });
 
-// Users route
-router.get('/users', (req, res) => {
-  const users = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
-  ];
-  res.render('pages/users', { users, activeRoute: 'users' });
+router.get('/lead-users', auth.requireAuth, async (req, res) => {
+  try {
+    const users = await getLeadUsers();
+    res.render('pages/lead-users', { users, pageTitle: 'Lead Users', activeRoute: 'lead-users' });
+  } catch (error) {
+    console.error('Error fetching lead users:', error);
+    res.status(500).render('pages/error', { message: 'Error fetching lead users' });
+  }
 });
 
-// New User route
-router.get('/users/new', (req, res) => {
-  res.render('pages/users-new', { activeRoute: 'users-new' });
+router.post('/lead-users/:id/delete', auth.requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await new Promise((resolve, reject) => {
+      db.remove({ _id: id }, {}, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    res.redirect('/lead-users');
+  } catch (error) {
+    res.status(500).render('pages/error', { message: 'Error deleting lead user' });
+  }
 });
 
-router.post('/users/create', (req, res) => {
-  // Here you would typically save the new user to a database
-  console.log('New user:', req.body);
-  res.redirect('/users');
+router.get('/lead-users/:id/edit', auth.requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const leadUser = await new Promise((resolve, reject) => {
+      db.findOne({ _id: id }, (err, doc) => {
+        if (err) reject(err);
+        else resolve(doc);
+      });
+    });
+    if (!leadUser) {
+      return res.status(404).render('pages/error', { message: 'Lead user not found' });
+    }
+    res.render('pages/lead-users-edit', { leadUser, activeRoute: 'lead-users' });
+  } catch (error) {
+    res.status(500).render('pages/error', { message: 'Error fetching lead user' });
+  }
 });
 
-// Lead Users route
-router.get('/lead-users', (req, res) => {
-  const leadUsers = [
-    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', leadScore: 85, lastActivity: '2023-05-15' },
-    { id: 2, name: 'Bob Williams', email: 'bob@example.com', leadScore: 72, lastActivity: '2023-05-14' },
-  ];
-  res.render('pages/lead-users', { leadUsers, activeRoute: 'lead-users' });
+router.post('/lead-users/:id', auth.requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { username, username_bot, tg_id } = req.body;
+  try {
+    await new Promise((resolve, reject) => {
+      db.update({ _id: id }, { $set: { username, username_bot, tg_id } }, {}, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    console.log(`Lead user updated: ID=${id}, Username=${username}, Bot=${username_bot}`);
+    res.redirect('/lead-users');
+  } catch (error) {
+    console.error('Error updating lead user:', error);
+    res.status(500).render('pages/error', { message: 'Error updating lead user' });
+  }
 });
 
 module.exports = router;

@@ -9,28 +9,25 @@ module.exports = {
       return res.redirect('/');
     }
   },
-
-  login: async (username, password) => {
-    const admin = await db.admins.findOne({ username });
-    if (admin && await bcrypt.compare(password, admin.password)) {
-      return admin;
-    }
-    return null;
-  },
-
-  setupFirstTimeAdmin: async (username, password) => {
-    const existingAdmin = await db.admins.findOne({});
-    if (existingAdmin) {
-      throw new Error('Admin already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = {
-      username,
-      password: hashedPassword,
-      createdAt: new Date()
-    };
-
-    return db.admins.insert(newAdmin);
+  authenticateUser: (username, password, callback) => {
+    db.users.findOne({ username: username, type: 'approved' }, (err, user) => {
+      if (err) {
+        return callback(err);
+      }
+      if (!user) {
+        return callback(null, false);
+      }
+      // Проверка пароля (предполагается, что у вас есть функция comparePassword)
+      comparePassword(password, user.password, (err, isMatch) => {
+        if (err) {
+          return callback(err);
+        }
+        if (isMatch) {
+          return callback(null, user);
+        } else {
+          return callback(null, false);
+        }
+      });
+    });
   }
 };
