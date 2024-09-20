@@ -1,7 +1,3 @@
-Here’s a description for the `README.md` file of the `AdminitY` project:
-
----
-
 # AdminitY
 
 **AdminitY** is a secure and modular admin panel built using **Node.js**, **Express**, **Handlebars**, and **NeDB** for database management. It is designed to handle user authentication, CRUD operations, and dynamic content rendering, providing a robust solution for admin interfaces.
@@ -96,6 +92,4 @@ Here’s a description for the `README.md` file of the `AdminitY` project:
 - Add support for more user roles and access levels.
 - Implement two-factor authentication for higher security.
 - Expand database support to include MongoDB or PostgreSQL for larger-scale applications.
-
----
 
